@@ -2,8 +2,7 @@ from pyneuron import ShotNoiseConductance, MATThresholds, Neuron, sr_experiment
 import numpy as np
 import pandas as pd
 from functools import partial
-from joblib import Parallel, delayed
-from multiprocessing import cpu_count
+from multiprocessing import Pool, cpu_count
 
 
 exc = ShotNoiseConductance(
@@ -69,8 +68,7 @@ def intensity_freq_func(intensity, B):
     inh = 3.73 * (1 + B * (intensity - 1))
     return exc, inh
 
-def obtain_sr(B, tw, seed):
-    np.random.seed(42)
+def obtain_sr(seed, B, tw):
     func = partial(intensity_freq_func, B=B)
     return sr_experiment(neuron, tw, 0.1, intensities, func, seed)
 
@@ -84,12 +82,17 @@ intensities = np.random.permutation(np.repeat(np.logspace(0, 1.6, 100), 2))
 
 res_dict = {}
 
+n_jobs = cpu_count()
+p = Pool(n_jobs)
+
 for tw in [1000, 750, 500, 250]:
     print(tw)
     res_dict[tw] = {}
     for B in [0, 0.2, 0.4, 0.6, 0.8, 1]:
-        res_dict[tw][B] = sersum(Parallel(n_jobs=cpu_count())(delayed(obtain_sr)(B, tw, i)
-            for i in range(cpu_count())))
+        func = partial(obtain_sr, B=B, tw=tw)
+        # results = func(1)
+        results = p.map(func, range(n_jobs))
+        res_dict[tw][B] = sersum(results)
 
 def merge_results(res_dict):
     tobeser = {}
