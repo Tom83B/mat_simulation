@@ -32,6 +32,7 @@ vector<int> sr_experiment(Neuron neuron, double time_window, double dt,
 
 	int len = exc_intensities.size();
 	int print_step = len / 100;
+	if (print_step == 0) print_step = 1;
 
 	for (int i=0; i<len; i++) {
 		if (i % print_step == 0) {
