@@ -74,7 +74,7 @@ cdef class Neuron:
         return self.neuron.voltage
 
 def sr_experiment(Neuron neuron, double time_window, double dt,
-        intensities, intensity_freq_func):
+        intensities, intensity_freq_func, int seed):
     exc_intensities, inh_intensities = np.array([np.array(intensity_freq_func(i)) for i in intensities]).T * dt
 
     cdef CNeuron c_neuron = neuron.neuron
@@ -84,7 +84,7 @@ def sr_experiment(Neuron neuron, double time_window, double dt,
 
     mat_names = [name.decode("utf-8") for name in neuron.mat_names]
 
-    results = _sr_experiment(c_neuron, time_window, dt, c_exc, c_inh)
+    results = _sr_experiment(c_neuron, time_window, dt, c_exc, c_inh, seed)
     result_array = np.array([x for x in results])
 
     return pd.DataFrame(result_array.reshape(-1, len(mat_names)), columns=mat_names, index=intensities).\

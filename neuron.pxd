@@ -27,4 +27,4 @@ cdef extern from "neuron.h":
 
 cdef extern from "simulation.cpp":
     vector[int] sr_experiment(Neuron neuron, double time_window, double dt,
-                       vector[double] exc_intensities, vector[double] inh_intensities)
+                       vector[double] exc_intensities, vector[double] inh_intensities, int seed)

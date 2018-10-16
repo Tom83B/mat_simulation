@@ -27,7 +27,8 @@ void Simulation::run(double time, double dt, double exc_rate, double inh_rate) {
 }
 
 vector<int> sr_experiment(Neuron neuron, double time_window, double dt,
-		vector<double> exc_intensities, vector<double> inh_intensities) {
+		vector<double> exc_intensities, vector<double> inh_intensities, int seed) {
+	srand(seed);
 	vector<int> spike_counts;
 
 	int len = exc_intensities.size();
