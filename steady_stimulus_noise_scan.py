@@ -107,7 +107,7 @@ result_dict = {}
 for res in results:
     result_dict = {**result_dict, **res}
 
-print(pd.Series(result_dict))
+pd.Series(result_dict).to_pickle('steady_stimulus_noise_scan.pkl')
 
 
 # res.to_pickle('test.pkl')
