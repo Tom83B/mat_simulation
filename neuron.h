@@ -28,7 +28,7 @@ class MATThresholds {
 };
 
 class Neuron {
-	double resting_potential, membrane_resistance, membrane_capacitance, time_constant, time;
+	double resting_potential, membrane_resistance, membrane_capacitance, time_constant;
 
 	public:
 		Neuron();
@@ -38,7 +38,7 @@ class Neuron {
 		void timestep(double);
 		vector<ShotNoiseConductance*> conductances;
 		vector<MATThresholds*> mats;
-		double voltage;
+		double voltage, time;
 
 };
 

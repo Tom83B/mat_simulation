@@ -73,6 +73,13 @@ cdef class Neuron:
     def voltage(self):
         return self.neuron.voltage
 
+    @property
+    def time(self):
+        return self.neuron.time
+    @time.setter
+    def time(self, time):
+        self.neuron.time = time
+
 def sr_experiment(Neuron neuron, double time_window, double dt,
         intensities, intensity_freq_func, int seed):
     exc_intensities, inh_intensities = np.array([np.array(intensity_freq_func(i)) for i in intensities]).T * dt
@@ -89,3 +96,29 @@ def sr_experiment(Neuron neuron, double time_window, double dt,
 
     return pd.DataFrame(result_array.reshape(-1, len(mat_names)), columns=mat_names, index=intensities).\
             groupby(level=0).agg(lambda x: list(x)).stack().swaplevel()
+
+def steady_spike_train(Neuron neuron, double time, double dt, exc, inh):
+    mat_names = [name.decode("utf-8") for name in neuron.mat_names]
+    spike_trains = {}
+    cdef vector[double] spike_times
+    cdef CMATThresholds* mat
+    cdef CShotNoiseConductance *conductance
+
+    conductance = neuron.neuron.conductances[0]
+    deref(conductance).set_rate(exc * dt)
+
+    conductance = neuron.neuron.conductances[1]
+    deref(conductance).set_rate(inh * dt)
+
+    cdef double tot_time = 0
+    while tot_time < time:
+        neuron.timestep(dt)
+        tot_time += dt
+
+    for i, name in enumerate(mat_names):
+        mat = neuron.neuron.mats[i]
+        spike_times = deref(mat).get_spike_times()
+        deref(mat).reset_spike_times()
+        spike_trains[name] = np.array([t for t in spike_times])
+
+    return spike_trains

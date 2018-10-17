@@ -8,12 +8,14 @@ cdef extern from "neuron.h":
     cdef cppclass ShotNoiseConductance:
         # ShotNoiseConductance() except +
         ShotNoiseConductance(double, double, double, double) except +
+        void set_rate(double)
         double g, reversal
 
     cdef cppclass MATThresholds:
         MATThresholds() except +
         MATThresholds(double, double, double, double, double, double) except +
         vector[double] get_spike_times()
+        void reset_spike_times()
         double threshold
 
     cdef cppclass Neuron:
@@ -23,7 +25,7 @@ cdef extern from "neuron.h":
         void timestep(double)
         vector[ShotNoiseConductance*] conductances
         vector[MATThresholds*] mats
-        double voltage
+        double voltage, time
 
 cdef extern from "simulation.cpp":
     vector[int] sr_experiment(Neuron neuron, double time_window, double dt,
