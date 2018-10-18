@@ -19,12 +19,14 @@ inh = ShotNoiseConductance(
 
 thresholds = [-60, -60, -60, -60]
 
+additional = 18
+
 RS = MATThresholds(
     alpha1=30,
     alpha2=2,
     tau1=10,
     tau2=200,
-    omega=thresholds[0],
+    omega=-80 + additional,
     refractory_period=2,
     name='RS')
 
@@ -33,7 +35,7 @@ IB = MATThresholds(
     alpha2=1.5,
     tau1=10,
     tau2=200,
-    omega=thresholds[1],
+    omega=-80 + additional,
     refractory_period=2,
     name='IB')
 
@@ -42,7 +44,7 @@ FS = MATThresholds(
     alpha2=0.2,
     tau1=10,
     tau2=200,
-    omega=thresholds[2],
+    omega=-80 + additional,
     refractory_period=2,
     name='FS')
 
@@ -51,7 +53,7 @@ CH = MATThresholds(
     alpha2=0.4,
     tau1=10,
     tau2=200,
-    omega=thresholds[3],
+    omega=-80 + additional,
     refractory_period=2,
     name='CH')
 
