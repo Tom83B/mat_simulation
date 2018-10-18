@@ -17,12 +17,14 @@ inh = ShotNoiseConductance(
     reversal=-75,
     decay=10)
 
+thresholds = [-60, -60, -60, -60]
+
 RS = MATThresholds(
     alpha1=30,
     alpha2=2,
     tau1=10,
     tau2=200,
-    omega=-65,
+    omega=thresholds[0],
     refractory_period=2,
     name='RS')
 
@@ -31,7 +33,7 @@ IB = MATThresholds(
     alpha2=1.5,
     tau1=10,
     tau2=200,
-    omega=-64.3,
+    omega=thresholds[1],
     refractory_period=2,
     name='IB')
 
@@ -40,7 +42,7 @@ FS = MATThresholds(
     alpha2=0.2,
     tau1=10,
     tau2=200,
-    omega=-62.4,
+    omega=thresholds[2],
     refractory_period=2,
     name='FS')
 
@@ -49,7 +51,7 @@ CH = MATThresholds(
     alpha2=0.4,
     tau1=10,
     tau2=200,
-    omega=-61.8,
+    omega=thresholds[3],
     refractory_period=2,
     name='CH')
 
@@ -78,7 +80,7 @@ def sersum(serlist):
         tmp = tmp + ser
     return tmp
 
-intensities = np.random.permutation(np.repeat(np.logspace(0, 1.6, 100), 2))
+intensities = np.random.permutation(np.repeat(np.logspace(0, 1.6, 100), 500))
 
 res_dict = {}
 
