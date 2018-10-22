@@ -80,7 +80,7 @@ def sersum(serlist):
         tmp = tmp + ser
     return tmp
 
-intensities = np.random.permutation(np.repeat(np.logspace(0, 1.6, 100), 1ß00))
+intensities = np.random.permutation(np.repeat(np.logspace(0, 2.0, 100), 200))
 
 res_dict = {}
 
@@ -108,4 +108,4 @@ def merge_results(res_dict):
     return pd.Series(tobeser)
 
 res = merge_results(res_dict)
-res.to_pickle('test.pkl')
+res.to_pickle('random_stimulus_noise_scan.pkl')
