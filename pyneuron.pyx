@@ -9,6 +9,7 @@ from neuron cimport ShotNoiseConductance as CShotNoiseConductance
 from neuron cimport MATThresholds as CMATThresholds
 from neuron cimport Neuron as CNeuron
 from neuron cimport sr_experiment as _sr_experiment
+from neuron cimport sr_experiment_spike_times as _sr_experiment_spike_times
 
 import numpy as np
 import pandas as pd
@@ -29,6 +30,9 @@ cdef class ShotNoiseConductance:
     def g(self):
         return deref(self.conductance).g
 
+    def set_rate(self, rate):
+        deref(self.conductance).set_rate(rate)
+
 cdef class MATThresholds:
     cdef CMATThresholds* mat  # Hold a C++ instance which we're wrapping
     cdef string name
@@ -44,6 +48,15 @@ cdef class MATThresholds:
     @property
     def threshold(self):
         return deref(self.mat).threshold
+
+    def get_spike_times(self):
+        cdef vector[double] spike_times
+
+        spike_times = deref(self.mat).get_spike_times()
+        return np.array([ x for x in spike_times ])
+
+    def reset_spike_times(self):
+        deref(self.mat).reset_spike_times()
 
 
 cdef class Neuron:
@@ -82,7 +95,9 @@ cdef class Neuron:
 
 def sr_experiment(Neuron neuron, double time_window, double dt,
         intensities, intensity_freq_func, int seed):
-    exc_intensities, inh_intensities = np.array([np.array(intensity_freq_func(i)) for i in intensities]).T * dt
+    exc_intensities, inh_intensities = np.array([
+        np.array(intensity_freq_func(i))
+            for i in intensities]).T * dt
 
     cdef CNeuron c_neuron = neuron.neuron
     cdef vector[double] c_exc = exc_intensities
@@ -96,6 +111,33 @@ def sr_experiment(Neuron neuron, double time_window, double dt,
 
     return pd.DataFrame(result_array.reshape(-1, len(mat_names)), columns=mat_names, index=intensities).\
             groupby(level=0).agg(lambda x: list(x)).stack().swaplevel()
+
+def sr_experiment(Neuron neuron, time_windows, dt, intensities, intensity_freq_func, seed):
+    exc_intensities, inh_intensities = np.array([
+        np.array(intensity_freq_func(i))
+            for i in intensities]).T * dt
+
+    cdef CNeuron c_neuron = neuron.neuron
+    cdef vector[double] c_exc = exc_intensities
+    cdef vector[double] c_inh = inh_intensities
+    cdef vector[vector[double]] results
+
+    mat_names = [name.decode("utf-8") for name in neuron.mat_names]
+
+    results = _sr_experiment_spike_times(c_neuron, max(time_windows), dt, c_exc, c_inh, seed)
+    result_python = [
+        np.array([st for st in spike_times]) for spike_times in results
+    ]
+    
+    result_dict = {}
+
+    for tw in time_windows:
+        result_dict[tw] = pd.DataFrame(
+            np.array([ (x < tw).sum() for x in result_python ]).reshape(-1, len(mat_names)),
+            columns=mat_names,
+            index=intensities).groupby(level=0).agg(lambda x: list(x))
+
+    return result_dict
 
 def steady_spike_train(Neuron neuron, double time, double dt, exc, inh):
     mat_names = [name.decode("utf-8") for name in neuron.mat_names]

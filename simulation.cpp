@@ -58,6 +58,40 @@ vector<int> sr_experiment(Neuron neuron, double time_window, double dt,
 	return spike_counts;
 }
 
+vector<vector<double>> sr_experiment_spike_times(Neuron neuron, double time_window, double dt,
+		vector<double> exc_intensities, vector<double> inh_intensities, int seed) {
+	srand(seed);
+	vector<vector<double>> spike_times;
+
+	int len = exc_intensities.size();
+	int print_step = len / 100;
+	if (print_step == 0) print_step = 1;
+
+	for (int i=0; i<len; i++) {
+		neuron.time = 0;
+
+		// if (i % print_step == 0) {
+		// 	cout << i << " / " << len << endl;
+		// }
+		(*neuron.conductances[0]).set_rate(exc_intensities[i]);
+		(*neuron.conductances[1]).set_rate(inh_intensities[i]);
+
+		double sim_time = 0;
+
+		while (sim_time <= time_window) {
+			neuron.timestep(dt);
+			sim_time += dt;
+		}
+
+		for (auto mat_ptr : neuron.mats) {
+			spike_times.push_back(mat_ptr->get_spike_times());
+			mat_ptr->reset_spike_times();
+		}
+	}
+
+	return spike_times;
+}
+
 int main(int argc, char const *argv[])
 {
 	srand(time(nullptr));
